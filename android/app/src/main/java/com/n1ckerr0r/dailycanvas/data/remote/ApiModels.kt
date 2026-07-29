@@ -1,0 +1,121 @@
+package com.n1ckerr0r.dailycanvas.data.remote
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class MainResponseDto(
+    val date: String,
+    @SerialName("selectedCollections") val selectedCollections: List<String>,
+    @SerialName("todayArtwork") val todayArtwork: ArtworkDetailDto,
+    @SerialName("todayStatus") val todayStatus: TodayStatusDto,
+)
+
+@Serializable
+data class GalleryResponseDto(
+    val items: List<ArtworkSummaryDto>,
+)
+
+@Serializable
+data class FavoritesResponseDto(
+    val items: List<FavoriteArtworkDto>,
+)
+
+@Serializable
+data class SettingsDto(
+    @SerialName("selectedCollections") val selectedCollections: List<String>,
+    val notifications: NotificationSettingsDto,
+)
+
+@Serializable
+data class TagsResponseDto(
+    val items: List<TagDto>,
+)
+
+@Serializable
+data class ArtworkDetailDto(
+    val id: String,
+    val title: String,
+    val artist: ArtistDto,
+    val year: Int,
+    @SerialName("imageUrl") val imageUrl: String,
+    @SerialName("isFavorite") val isFavorite: Boolean? = null,
+    val tags: List<TagDto> = emptyList(),
+    val description: String,
+    val facts: List<String>,
+    val collection: String,
+)
+
+@Serializable
+data class ArtworkSummaryDto(
+    val id: String,
+    val title: String,
+    val artist: ArtistDto,
+    val year: Int,
+    @SerialName("imageUrl") val imageUrl: String,
+    @SerialName("isFavorite") val isFavorite: Boolean? = null,
+    val tags: List<TagDto> = emptyList(),
+)
+
+@Serializable
+data class FavoriteArtworkDto(
+    val id: String,
+    val title: String,
+    val artist: ArtistDto,
+    val year: Int,
+    @SerialName("imageUrl") val imageUrl: String,
+    @SerialName("isFavorite") val isFavorite: Boolean? = null,
+    val tags: List<TagDto> = emptyList(),
+)
+
+@Serializable
+data class ArtistDto(
+    val id: String,
+    val name: String,
+)
+
+@Serializable
+data class TagDto(
+    val id: String,
+    val name: String,
+    val type: String,
+)
+
+@Serializable
+data class TodayStatusDto(
+    @SerialName("hasViewedToday") val hasViewedToday: Boolean,
+    @SerialName("shouldNotify") val shouldNotify: Boolean,
+    val message: String,
+)
+
+@Serializable
+data class NotificationSettingsDto(
+    val enabled: Boolean,
+    val time: String,
+    @SerialName("timeZone") val timeZone: String,
+)
+
+@Serializable
+data class FavoriteMutationRequestDto(
+    @SerialName("artworkId") val artworkId: String,
+)
+
+@Serializable
+data class FavoriteMutationResponseDto(
+    val success: Boolean,
+    @SerialName("artworkId") val artworkId: String,
+    @SerialName("isFavorite") val isFavorite: Boolean,
+)
+
+@Serializable
+data class SettingsPatchDto(
+    @SerialName("selectedCollections") val selectedCollections: List<String>? = null,
+    val notifications: NotificationSettingsPatchDto? = null,
+)
+
+@Serializable
+data class NotificationSettingsPatchDto(
+    val enabled: Boolean? = null,
+    val time: String? = null,
+    @SerialName("timeZone") val timeZone: String? = null,
+)
