@@ -558,6 +558,7 @@ components:
     TagType:
       type: string
       enum: [genre, style, period, collection]
+      x-enum-varnames: [TagTypeGenre, TagTypeStyle, TagTypePeriod, TagTypeCollection]
     FavoritesSort:
       type: string
       enum: [recently_added, title, year, artist]
