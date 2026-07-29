@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DailyCanvas</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <p class="eyebrow">DailyCanvas</p>
+          <h1>Живая галерея на каждый день</h1>
+          <p class="lede">
+            Десктопная версия в той же визуальной логике, что и мобильный клиент: картина дня, галерея, избранное и настройки в одной рабочей поверхности.
+          </p>
+        </div>
+        <nav class="nav">
+          <button class="nav-button active" data-view="overview">Сегодня</button>
+          <button class="nav-button" data-view="gallery">Галерея</button>
+          <button class="nav-button" data-view="favorites">Избранное</button>
+          <button class="nav-button" data-view="settings">Настройки</button>
+        </nav>
+        <div class="meta-card">
+          <p class="meta-label">Подключение</p>
+          <p id="api-base-url" class="meta-value"></p>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Коллекция дня</p>
+            <h2 id="page-title">Сегодня</h2>
+          </div>
+          <div class="toolbar">
+            <label class="search">
+              <span>Поиск</span>
+              <input id="search-input" type="search" placeholder="Название, автор, тег" />
+            </label>
+            <button id="refresh-button" class="ghost-button" type="button">Обновить</button>
+          </div>
+        </header>
+
+        <section id="overview-view" class="view active">
+          <div class="overview-grid">
+            <article id="hero-card" class="hero-card panel loading"></article>
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Статус</p>
+                  <h3>Сегодняшний ритм</h3>
+                </div>
+              </div>
+              <div id="status-card" class="status-stack loading"></div>
+            </section>
+          </div>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Лента</p>
+                <h3>Новые работы</h3>
+              </div>
+            </div>
+            <div id="gallery-strip" class="gallery-strip loading"></div>
+          </section>
+        </section>
+
+        <section id="gallery-view" class="view">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Фильтры</p>
+                <h3>Галерея</h3>
+              </div>
+              <div id="tag-filters" class="chip-row"></div>
+            </div>
+            <div id="gallery-grid" class="gallery-grid loading"></div>
+          </section>
+        </section>
+
+        <section id="favorites-view" class="view">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Сохраненное</p>
+                <h3>Избранные работы</h3>
+              </div>
+            </div>
+            <div id="favorites-grid" class="gallery-grid loading"></div>
+          </section>
+        </section>
+
+        <section id="settings-view" class="view">
+          <section class="panel settings-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Параметры</p>
+                <h3>Настройки коллекции</h3>
+              </div>
+            </div>
+            <div id="settings-form" class="settings-form loading"></div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="detail-panel panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Фокус</p>
+            <h3>Детали работы</h3>
+          </div>
+        </div>
+        <div id="detail-card" class="detail-card loading"></div>
+      </aside>
+    </div>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

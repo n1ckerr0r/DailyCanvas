@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/v2.7.2/configuration-schema.json
+package: openapi
+output: internal/adapters/http/openapi/server.gen.go
+generate:
+  models: true
+  chi-server: true
+output-options:
+  skip-prune: true
+  response-type-suffix: Resp
