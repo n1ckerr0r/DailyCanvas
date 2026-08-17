@@ -12,6 +12,12 @@ interface DailyCanvasApi {
     @GET("main")
     suspend fun getMain(): MainResponseDto
 
+    @GET("calendar")
+    suspend fun getCalendar(
+        @Query("from") from: String,
+        @Query("to") to: String,
+    ): CalendarResponseDto
+
     @GET("artworks/gallery")
     suspend fun getGallery(
         @Query("collection") collection: String? = null,

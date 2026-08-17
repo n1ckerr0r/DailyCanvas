@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -14,12 +15,11 @@ val localProperties = Properties().apply {
 }
 
 val apiBaseUrl = providers.gradleProperty("dailycanvas.api.baseUrl")
-    .orElse(localProperties.getProperty("dailycanvas.api.baseUrl") ?: "")
+    .orElse(
+        localProperties.getProperty("dailycanvas.api.baseUrl")
+            ?: "http://10.0.2.2:37117/api/v1/",
+    )
     .get()
-
-check(apiBaseUrl.isNotBlank()) {
-    "Missing dailycanvas.api.baseUrl. Set it in android/local.properties or pass -Pdailycanvas.api.baseUrl=..."
-}
 
 android {
     namespace = "com.n1ckerr0r.dailycanvas"
@@ -60,10 +60,6 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -86,6 +82,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
