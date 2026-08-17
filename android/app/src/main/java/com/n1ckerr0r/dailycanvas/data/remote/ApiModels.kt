@@ -33,6 +33,20 @@ data class TagsResponseDto(
 )
 
 @Serializable
+data class CalendarResponseDto(
+    val from: String,
+    val to: String,
+    val items: List<CalendarItemDto>,
+)
+
+@Serializable
+data class CalendarItemDto(
+    val date: String,
+    @SerialName("artworkId") val artworkId: String,
+    @SerialName("imageUrl") val imageUrl: String,
+)
+
+@Serializable
 data class ArtworkDetailDto(
     val id: String,
     val title: String,

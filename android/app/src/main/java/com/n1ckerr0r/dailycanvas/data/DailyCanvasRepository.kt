@@ -6,6 +6,7 @@ import com.n1ckerr0r.dailycanvas.data.remote.NetworkModule
 import com.n1ckerr0r.dailycanvas.data.remote.NotificationSettingsPatchDto
 import com.n1ckerr0r.dailycanvas.data.remote.SettingsPatchDto
 import com.n1ckerr0r.dailycanvas.ui.model.ArtworkCard
+import com.n1ckerr0r.dailycanvas.ui.model.CalendarArtwork
 import com.n1ckerr0r.dailycanvas.ui.model.HomePayload
 import com.n1ckerr0r.dailycanvas.ui.model.SettingsPayload
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ class DailyCanvasRepository(
 
         HomePayload(
             greeting = "Доброе утро",
+            date = main.date,
             artworkOfDay = main.todayArtwork.toCard(),
             gallery = gallery,
             favorites = favorites,
@@ -32,6 +34,16 @@ class DailyCanvasRepository(
 
     suspend fun loadArtwork(artworkId: String): ArtworkCard = withContext(Dispatchers.IO) {
         api.getArtwork(artworkId).toCard()
+    }
+
+    suspend fun loadCalendar(from: String, to: String): List<CalendarArtwork> = withContext(Dispatchers.IO) {
+        api.getCalendar(from, to).items.map {
+            CalendarArtwork(
+                date = it.date,
+                artworkId = it.artworkId,
+                imageUrl = it.imageUrl.toBackendUrl(),
+            )
+        }
     }
 
     suspend fun toggleFavorite(artworkId: String, isFavorite: Boolean) = withContext(Dispatchers.IO) {
@@ -51,5 +63,9 @@ class DailyCanvasRepository(
                 ),
             ),
         ).toPayload()
+    }
+
+    suspend fun updateCollections(collections: List<String>): SettingsPayload = withContext(Dispatchers.IO) {
+        api.updateSettings(SettingsPatchDto(selectedCollections = collections)).toPayload()
     }
 }

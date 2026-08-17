@@ -301,6 +301,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255,255,255,0.8);
+  font-family: Inter, "Segoe UI", sans-serif;
 }
 
 .art-card.compact {
@@ -316,6 +317,71 @@ h3 {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+}
+
+.art-card .card-info {
+  position: relative;
+  display: block;
+  height: 104px;
+  min-height: 104px;
+  font-family: inherit;
+}
+
+.art-card .card-text {
+  min-width: 0;
+  height: 100%;
+  padding-right: 54px;
+  font-family: inherit;
+}
+
+.art-card .card-title,
+.art-card .card-artist,
+.art-card .card-year {
+  margin: 0;
+  min-width: 0;
+  font-family: Inter, "Segoe UI", sans-serif;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.art-card .card-title {
+  display: -webkit-box;
+  min-height: 44px;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.art-card .card-artist {
+  margin-top: 5px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.art-card .card-year {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.art-card .card-info > .favorite-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  flex: none;
 }
 
 .favorite-button {

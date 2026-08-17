@@ -201,10 +201,11 @@ const card = (item, compact = false) => `
     <button class="card-visual" data-detail="${item.id}" type="button">
       ${image(item.imageUrl, item.title)}
     </button>
-    <div class="card-actions">
-      <div>
-        <h4>${item.title}</h4>
-        <p class="meta-copy">${item.artist.name} • ${item.year}</p>
+    <div class="card-actions card-info">
+      <div class="card-text">
+        <h4 class="card-title">${item.title}</h4>
+        <p class="card-artist">${item.artist.name}</p>
+        <p class="card-year">${item.year}</p>
       </div>
       <button class="favorite-button ${item.isFavorite ? "active" : ""}" data-favorite="${item.id}">
         ${item.isFavorite ? "♥" : "♡"}
