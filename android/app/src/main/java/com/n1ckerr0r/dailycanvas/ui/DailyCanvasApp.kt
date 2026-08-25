@@ -395,7 +395,7 @@ private fun AuthScreen(
         Text(
             text = if (registerMode) "Регистрация" else "Вход",
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            fontFamily = FontFamily.Serif,
+            fontFamily = FontFamily.SansSerif,
             fontSize = 31.sp,
             fontWeight = FontWeight.Bold,
         )
@@ -486,7 +486,7 @@ private fun HomeScreen(
                 ) {
                     Text(
                         text = greetingFor(LocalTime.now()),
-                        fontFamily = FontFamily.Serif,
+                        fontFamily = FontFamily.SansSerif,
                         fontSize = 30.sp,
                         lineHeight = 36.sp,
                         fontWeight = FontWeight.Medium,
@@ -560,18 +560,24 @@ private fun HomeScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             artwork.title,
-                            fontFamily = FontFamily.Serif,
+                            fontFamily = FontFamily.SansSerif,
                             fontSize = 32.sp,
                             lineHeight = 36.sp,
                             fontWeight = FontWeight.Medium,
                         )
                         Text(
                             artwork.artist,
-                            fontSize = 18.sp,
+                            fontSize = 22.sp,
+                            lineHeight = 28.sp,
                             color = Color(0xFF5F5B58),
                             modifier = Modifier.clickable { onArtistClick(artwork.artistId) },
                         )
-                        Text(artwork.year, fontSize = 18.sp, color = Color(0xFF5F5B58))
+                        Text(
+                            text = artwork.year,
+                            fontSize = 22.sp,
+                            lineHeight = 28.sp,
+                            color = Color(0xFF5F5B58),
+                        )
                     }
                     Box(
                         modifier = Modifier
@@ -611,15 +617,7 @@ private fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         payload.artworkOfDay.tags.forEach { tag ->
-                            Text(
-                                tag.name,
-                                color = Color(0xFF18304C),
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .background(Color(0xFFF0EEEB), RoundedCornerShape(22.dp))
-                                    .clickable { onTagClick(tag) }
-                                    .padding(horizontal = 15.dp, vertical = 9.dp),
-                            )
+                            ArtworkTagChip(tag = tag, onClick = { onTagClick(tag) })
                         }
                     }
                 }
@@ -686,18 +684,12 @@ private fun ScreenHeader(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (onBack != null) {
-            TextButton(
-                onClick = onBack,
-                modifier = Modifier.size(44.dp),
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Text("←", fontSize = 32.sp, color = Color(0xFF172332))
-            }
+            BackButton(onClick = onBack)
         }
         Text(
             title,
             modifier = Modifier.weight(1f),
-            fontFamily = FontFamily.Serif,
+            fontFamily = FontFamily.SansSerif,
             fontSize = 32.sp,
             lineHeight = 36.sp,
             fontWeight = FontWeight.Medium,
@@ -712,6 +704,24 @@ private fun ScreenHeader(
                 SettingsIcon(modifier = Modifier.size(28.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun BackButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(52.dp)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "‹",
+            color = Color(0xFF172332),
+            fontSize = 46.sp,
+            lineHeight = 46.sp,
+            fontWeight = FontWeight.Normal,
+        )
     }
 }
 
@@ -761,7 +771,7 @@ private fun CalendarScreen(
             Text(
                 month.format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale.forLanguageTag("ru")))
                     .replaceFirstChar { it.titlecase(Locale.forLanguageTag("ru")) },
-                fontFamily = FontFamily.Serif,
+                fontFamily = FontFamily.SansSerif,
                 fontSize = 25.sp,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -899,10 +909,15 @@ private fun GalleryScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf("Все") }
+    var selectedAuthorId by rememberSaveable { mutableStateOf<String?>(null) }
     val allItems = state.payload?.gallery.orEmpty()
+    val authors = allItems
+        .distinctBy { it.artistId }
+        .sortedBy { it.artist }
+    val effectiveArtistFilter = artistFilter ?: selectedAuthorId
     val items = allItems.filter { artwork ->
         (tagFilter == null || artwork.tags.any { it.id == tagFilter }) &&
-            (artistFilter == null || artwork.artistId == artistFilter) &&
+            (effectiveArtistFilter == null || artwork.artistId == effectiveArtistFilter) &&
             (query.isBlank() || listOf(artwork.title, artwork.artist, artwork.year).any { it.contains(query, ignoreCase = true) } || artwork.tags.any { it.name.contains(query, ignoreCase = true) }) &&
             categoryMatches(artwork, selectedCategory)
     }
@@ -927,15 +942,61 @@ private fun GalleryScreen(
                     color = if (selectedCategory == category) Color.White else Color(0xFF262626),
                     modifier = Modifier
                         .background(if (selectedCategory == category) Color(0xFF082C58) else Color(0xFFF0EEEA), RoundedCornerShape(22.dp))
-                        .clickable { selectedCategory = category }
+                        .clickable {
+                            selectedCategory = category
+                            if (category != "Автор") selectedAuthorId = null
+                        }
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                 )
             }
         }
-        if (tagFilter != null || artistFilter != null) {
+        if (selectedCategory == "Автор") {
+            Text(
+                text = "Выберите автора",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF5F5B58),
+            )
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChoiceChip(
+                        text = "Все авторы",
+                        selected = effectiveArtistFilter == null,
+                        onClick = {
+                            selectedAuthorId = null
+                            onClearFilter()
+                        },
+                    )
+                }
+                items(authors, key = { it.artistId }) { artwork ->
+                    FilterChoiceChip(
+                        text = artwork.artist,
+                        selected = effectiveArtistFilter == artwork.artistId,
+                        onClick = {
+                            onClearFilter()
+                            selectedAuthorId = artwork.artistId
+                        },
+                    )
+                }
+            }
+        }
+        if (tagFilter != null || effectiveArtistFilter != null) {
+            val activeFilterName = effectiveArtistFilter?.let { id ->
+                allItems.firstOrNull { it.artistId == id }?.artist
+            } ?: tagFilter?.let { id ->
+                allItems.asSequence().flatMap { it.tags.asSequence() }.firstOrNull { it.id == id }?.name
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Включён фильтр", color = AccentRed, modifier = Modifier.weight(1f))
-                TextButton(onClick = onClearFilter) { Text("Показать все") }
+                Text(
+                    text = activeFilterName?.let { "Фильтр: $it" } ?: "Включён фильтр",
+                    color = Color(0xFF082C58),
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = {
+                    selectedAuthorId = null
+                    onClearFilter()
+                }) { Text("Сбросить") }
             }
         }
         if (gridMode) {
@@ -1017,10 +1078,52 @@ private fun categoryMatches(artwork: ArtworkCard, category: String): Boolean = w
 }
 
 @Composable
+private fun FilterChoiceChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = text,
+        color = if (selected) Color.White else Color(0xFF243142),
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        maxLines = 1,
+        modifier = Modifier
+            .background(
+                color = if (selected) Color(0xFF082C58) else Color(0xFFF0EEEB),
+                shape = RoundedCornerShape(50),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+    )
+}
+
+@Composable
+private fun ArtworkTagChip(
+    tag: ArtworkTag,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = tag.name,
+        color = Color(0xFF243142),
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.Medium,
+        maxLines = 1,
+        modifier = Modifier
+            .background(Color(0xFFE3DED7), RoundedCornerShape(50))
+            .border(1.dp, Color(0xFFCFC8BF), RoundedCornerShape(50))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 7.dp),
+    )
+}
+
+@Composable
 private fun GalleryHeader(title: String, gridMode: Boolean, onToggleGrid: () -> Unit, onOpenSettings: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Spacer(Modifier.size(44.dp))
-        Text(title, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontFamily = FontFamily.Serif, fontSize = 30.sp, fontWeight = FontWeight.Medium)
+        Text(title, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontFamily = FontFamily.SansSerif, fontSize = 30.sp, fontWeight = FontWeight.Medium)
         TextButton(onClick = onToggleGrid, modifier = Modifier.size(44.dp), contentPadding = PaddingValues(0.dp)) {
             Text(if (gridMode) "☷" else "▦", fontSize = 26.sp, color = Color(0xFF172332))
         }
@@ -1140,7 +1243,7 @@ private fun SettingsScreen(
     ) {
         item { ScreenHeader("Настройки", onBack = onBack) }
         item {
-            Text("Профиль", fontFamily = FontFamily.Serif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("Профиль", fontFamily = FontFamily.SansSerif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(10.dp))
             SettingsGroup {
                 SettingsActionRow("Email", profileEmail, null)
@@ -1154,7 +1257,7 @@ private fun SettingsScreen(
         }
         item { HorizontalRule() }
         item {
-            Text("Тематика", fontFamily = FontFamily.Serif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("Тематика", fontFamily = FontFamily.SansSerif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text("Выберите, картины каких коллекций вы хотите видеть каждый день", color = Color(0xFF68635F), fontSize = 16.sp, lineHeight = 22.sp)
             Spacer(Modifier.height(10.dp))
             CollectionSetting(
@@ -1164,7 +1267,7 @@ private fun SettingsScreen(
         }
         item { HorizontalRule() }
         item {
-            Text("Напоминания", fontFamily = FontFamily.Serif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("Напоминания", fontFamily = FontFamily.SansSerif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("Показывать напоминание\nо новой картине дня", modifier = Modifier.weight(1f), color = Color(0xFF5F5B58), fontSize = 16.sp, lineHeight = 22.sp)
                 Switch(checked = current.notificationsEnabled, onCheckedChange = { onNotificationsChanged(it, current.notificationTime) })
@@ -1181,7 +1284,7 @@ private fun SettingsScreen(
         }
         item { HorizontalRule() }
         item {
-            Text("О приложении", fontFamily = FontFamily.Serif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text("О приложении", fontFamily = FontFamily.SansSerif, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(10.dp))
             SettingsGroup {
                 SettingsActionRow("Оценить приложение", "›") {
@@ -1255,6 +1358,8 @@ private fun DetailScreen(
 
     var fullScreenImage by rememberSaveable { mutableStateOf(false) }
     var showShareMenu by rememberSaveable { mutableStateOf(false) }
+    var descriptionExpanded by rememberSaveable(artwork.id) { mutableStateOf(false) }
+    var descriptionHasOverflow by remember(artwork.id) { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     LazyColumn(
@@ -1264,9 +1369,7 @@ private fun DetailScreen(
     ) {
         item {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onBack, modifier = Modifier.size(44.dp), contentPadding = PaddingValues(0.dp)) {
-                    Text("←", fontSize = 32.sp, color = Color(0xFF172332))
-                }
+                BackButton(onClick = onBack)
                 Spacer(Modifier.weight(1f))
                 TextButton(
                     onClick = onOpenSettings,
@@ -1296,14 +1399,20 @@ private fun DetailScreen(
         item {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(artwork.title, fontFamily = FontFamily.Serif, fontSize = 32.sp, lineHeight = 36.sp, fontWeight = FontWeight.Medium)
+                    Text(artwork.title, fontFamily = FontFamily.SansSerif, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Medium)
                     Text(
                         artwork.artist,
-                        fontSize = 17.sp,
-                        color = Color(0xFF5F5B58),
+                        fontSize = 22.sp,
+                        lineHeight = 28.sp,
+                        color = Color(0xFF4E4A47),
                         modifier = Modifier.clickable { onArtistClick(artwork.artistId) },
                     )
-                    Text(artwork.year, fontSize = 17.sp, color = Color(0xFF5F5B58))
+                    Text(
+                        text = artwork.year,
+                        fontSize = 22.sp,
+                        lineHeight = 28.sp,
+                        color = Color(0xFF5F5B58),
+                    )
                 }
                 Box(
                     modifier = Modifier
@@ -1318,9 +1427,37 @@ private fun DetailScreen(
             }
         }
         item {
-            Text("Описание", fontSize = 19.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(6.dp))
-            Text(artwork.description.ifBlank { "Описание будет добавлено." }, fontSize = 17.sp, lineHeight = 24.sp)
+            Text(
+                text = artwork.description.ifBlank { "Описание будет добавлено." },
+                fontSize = 18.sp,
+                lineHeight = 27.sp,
+                maxLines = if (descriptionExpanded) Int.MAX_VALUE else 4,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { result ->
+                    if (!descriptionExpanded) descriptionHasOverflow = result.hasVisualOverflow
+                },
+            )
+            if (descriptionHasOverflow || descriptionExpanded) {
+                Row(
+                    modifier = Modifier
+                        .clickable { descriptionExpanded = !descriptionExpanded }
+                        .padding(top = 12.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (descriptionExpanded) "Свернуть" else "Показать полностью",
+                        color = Color(0xFF082C58),
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = if (descriptionExpanded) "⌃" else "⌄",
+                        color = Color(0xFF082C58),
+                        fontSize = 17.sp,
+                    )
+                }
+            }
         }
         if (artwork.facts.isNotEmpty()) {
             item {
@@ -1335,14 +1472,7 @@ private fun DetailScreen(
                 Spacer(Modifier.height(10.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     artwork.tags.forEach { tag ->
-                        Text(
-                            tag.name,
-                            color = Color(0xFF18304C),
-                            modifier = Modifier
-                                .background(Color(0xFFF0EEEB), RoundedCornerShape(22.dp))
-                                .clickable { onTagClick(tag) }
-                                .padding(horizontal = 15.dp, vertical = 9.dp),
-                        )
+                        ArtworkTagChip(tag = tag, onClick = { onTagClick(tag) })
                     }
                 }
             }
@@ -1698,7 +1828,7 @@ private fun ShareDownloadDialog(
         shape = RoundedCornerShape(28.dp),
         title = {
             Column {
-                Text("Картина с собой", fontFamily = FontFamily.Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Text("Картина с собой", fontFamily = FontFamily.SansSerif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                 Text("Поделитесь находкой или сохраните её в галерею", color = Color(0xFF68635F), fontSize = 14.sp, lineHeight = 19.sp)
             }
         },
